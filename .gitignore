@@ -1,4 +1,11 @@
+# macOS and R temporary files
+.DS_Store
+.Rhistory
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# ECG datasets
 data/raw/
 data/processed/
-.ipynb_checkpoints/
-.DS_Store

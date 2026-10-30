@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import random
+from pathlib import Path
 
 
 class_list = ["N", "S", "V", "F", "Q"]
@@ -294,24 +295,84 @@ def test_CompactCNN(CompactCNN, accelerator, train_loader, val_loader, test_load
     return history
 
 
+
 def main() -> None:
     batch_size = 256
     num_classes = 5
     num_workers = 0
     seed = 42
+
     set_seeds_to(seed)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )
     print(f"Accelerator {device} will be used.")
+
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
-    # Need to be filled in after data is cleaned
-    # X_train, y_train = 
-    # X_val, y_val = 
-    # X_test, y_test = 
+    project_root = Path(__file__).resolve().parents[1]
+    data_dir = project_root / "data" / "processed"
 
-    test_CompactCNN(CompactCNN, device, num_classes)
+    X_train = np.load(data_dir / "X_train.npy")
+    y_train = np.load(data_dir / "y_train.npy")
+
+    X_val = np.load(data_dir / "X_val.npy")
+    y_val = np.load(data_dir / "y_val.npy")
+
+    X_test = np.load(data_dir / "X_test.npy")
+    y_test = np.load(data_dir / "y_test.npy")
+
+    print("\nLoaded ECG datasets:")
+    print("X_train:", X_train.shape)
+    print("y_train:", y_train.shape)
+    print("X_val:", X_val.shape)
+    print("y_val:", y_val.shape)
+    print("X_test:", X_test.shape)
+    print("y_test:", y_test.shape)
+
+    for name, X, y in [
+        ("Training", X_train, y_train),
+        ("Validation", X_val, y_val),
+        ("Testing", X_test, y_test),
+    ]:
+        if X.ndim != 2 or X.shape[1] != 252:
+            raise ValueError(
+                f"{name} ECG windows must have shape (N, 252)."
+            )
+
+        if len(X) != len(y):
+            raise ValueError(
+                f"{name} windows and labels have different lengths."
+            )
+
+    train_loader, val_loader, test_loader = make_loaders(
+        X_train,
+        y_train,
+        X_val,
+        y_val,
+        X_test,
+        y_test,
+        seed=seed,
+        batch_size=batch_size,
+        num_workers=num_workers,
+    )
+
+    print("\nDataLoaders created successfully!")
+    print("Training batches:", len(train_loader))
+    print("Validation batches:", len(val_loader))
+    print("Testing batches:", len(test_loader))
+
+    test_CompactCNN(
+        CompactCNN,
+        device,
+        train_loader,
+        val_loader,
+        test_loader,
+        num_classes,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
