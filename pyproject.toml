@@ -1,0 +1,31 @@
+[project]
+name = "ecgbeats"
+version = "0.1.0"
+description = "Four-class ECG heartbeat classification on MIT-BIH with matched CNN and CNN-Transformer models"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy==2.5.3",
+    "scipy==1.18.1",
+    "wfdb==4.3.1",
+    "scikit-learn==1.9.0",
+    "torch==2.7.0",
+    "matplotlib==3.11.1",
+    "pandas==3.0.5",
+    "tqdm==4.70.0",
+    "jupyter==1.1.1",
+    "ipykernel==7.3.0",
+]
+
+[tool.uv]
+package = false
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
